@@ -22,3 +22,15 @@ Can be dropped, since it is not available in the test set, and we don't target i
 * `position`
 * `gross_bookings_usd`
 * `click_bool`
+
+The columns that can have a value that represents missing data:
+* `visitor_hist_starrating` with `null`
+* `visitor_hist_adr_usd` with `null`
+* `prop_starrating` with `0`
+* `prop_review_score` with `0` being no review, and `null` having no data
+* `prop_log_historical_price` with `0`
+* `srch_query_affinity_score` with `null`
+* `orig_destination_distance` with `null`
+* `compn_rate` with `null`
+* `compn_inv` with `null`
+* `compn_rate_percent_diff` with `null`
