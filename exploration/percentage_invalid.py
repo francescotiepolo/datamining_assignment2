@@ -30,11 +30,11 @@ for key in columns.keys():
     if "NULL" in columns[key]:
         invalids = df[key].isnull().sum()
         counts_null[key] = {}
-        counts_null[key]["NULL"] = invalids/df[key].size#[invalids, invalids/df[key].size]
+        counts_null[key]["NULL"] = invalids/df[key].size
     if "0" in columns[key]:
         invalids = df[key].isin([0]).sum()
         counts_0[key] = {}
-        counts_0[key]["0"] = invalids/df[key].size#[invalids, invalids/df[key].size]
+        counts_0[key]["0"] = invalids/df[key].size
 
 pd.DataFrame.from_dict(counts_null).T.to_latex(dir + "exploration/percentage_null.tex")
 pd.DataFrame.from_dict(counts_0).T.to_latex(dir + "exploration/percentage_0.tex")
