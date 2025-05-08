@@ -16,7 +16,22 @@ There are multiple rows per search, each row has the data identifying the search
 * `orig_destination_distance`
 * `random_bool`
 
-The other columns are unique per row
+The other columns are unique per row:
+* `prop_country_id`
+* `prop_id`
+* `prop_starrating`
+* `prop_review_score`
+* `prop_brand_bool`
+* `prop_location_score1`
+* `prop_location_score2`
+* `prop_log_historical_price`
+* `position`
+* `price_usd`
+* `promotion_flag`
+* `gross_booking_usd`
+* `compn_rate` (`n` is the value `1` through `8`)
+* `compn_inv` (`n` is the value `1` through `8`)
+* `compn_rate_percent_diff` (`n` is the value `1` through `8`)
 
 Can be dropped, since it is not available in the test set, and we don't target it
 * `position`
@@ -31,6 +46,6 @@ The columns that can have a value that represents missing data:
 * `prop_log_historical_price` with `0`
 * `srch_query_affinity_score` with `null`
 * `orig_destination_distance` with `null`
-* `compn_rate` with `null`
-* `compn_inv` with `null`
-* `compn_rate_percent_diff` with `null`
+* `compn_rate` with `null` (`n` is the value `1` through `8`)
+* `compn_inv` with `null` (`n` is the value `1` through `8`)
+* `compn_rate_percent_diff` with `null` (`n` is the value `1` through `8`)
