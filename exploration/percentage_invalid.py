@@ -15,7 +15,8 @@ columns = {
     "orig_destination_distance": ["NULL"],
     "visitor_hist_starrating": ["NULL"],
     "visitor_hist_starrating": ["NULL"],
-    "visitor_hist_starrating": ["NULL"]
+    "visitor_hist_starrating": ["NULL"],
+    "prop_location_score2": ["NULL"]
 }
 
 for i in range(1,9):
