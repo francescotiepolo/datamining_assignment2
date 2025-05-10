@@ -5,6 +5,13 @@ There are multiple rows per search, each row has the data identifying the search
 * `visitor_location_country_id`
 * `visitor_hist_starrating`
 * `visitor_hist_adr_usd`
+* `prop_country_id`
+* `prop_id`
+* `prop_brand_bool`
+* `prop_location_score1`
+* `prop_location_score2`
+* `price_usd`
+* `promotion_flag`
 * `srch_destination_id`
 * `srch_length_of_stay`
 * `srch_booking_window`
@@ -21,7 +28,6 @@ The other columns are unique per row
 Can be dropped, since it is not available in the test set, and we don't target it
 * `position`
 * `gross_bookings_usd`
-* `click_bool`
 
 The columns that can have a value that represents missing data:
 * `visitor_hist_starrating` with `null`
@@ -40,9 +46,8 @@ The columns that can have a value that represents missing data:
     - too much missing and not useful for engineering
 * `orig_destination_distance` with `null`
     - too much missing and not useful for engineering
+
+Join?
 * `compn_rate` with `null`
-    - too much missing and not useful for engineering
 * `compn_inv` with `null`
-    - too much missing and not useful for engineering
 * `compn_rate_percent_diff` with `null`
-    - too much missing and not useful for engineering
