@@ -33,8 +33,9 @@ The columns that can have a value that represents missing data:
     - can be filled
 * `prop_review_score` with `0` being no review, and `null` having no data
     - can be filled (watch out for the 0: it is NOT missing value!!!)
+    - first create a dummy variable that says if the hotel had any reviews and then fill in both the null and the 0 values
 * `prop_log_historical_price` with `0`
-    - can be filled
+    - too much missing and not useful for engineering
 * `srch_query_affinity_score` with `null`
     - too much missing and not useful for engineering
 * `orig_destination_distance` with `null`
