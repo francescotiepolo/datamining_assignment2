@@ -44,6 +44,7 @@ The columns that can have a value that represents missing data:
 * `prop_starrating` with `0`
 * `prop_review_score` with `0` being no review, and `null` having no data
 * `prop_log_historical_price` with `0`
+* `prop_location_score2` with `null`
 * `srch_query_affinity_score` with `null`
 * `orig_destination_distance` with `null`
 * `compn_rate` with `null` (`n` is the value `1` through `8`)

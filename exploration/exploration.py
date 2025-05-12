@@ -37,10 +37,6 @@ def scatter(df: pd.DataFrame):
     plt.clf()
     plt.scatter(booked["price_usd_selected"], booked["price_usd_other"])
     plt.savefig(figures + "/price.pdf")
-    # hist(booked, "prop_location_score1_selected", "Location Score 1 Selected")
-    # hist(booked, "prop_location_score1_other", "Location Score 1 Other")
-    # hist(booked, "price_usd_selected", "Price Selected", 1000)
-    # hist(booked, "price_usd_other", "Price Other", 1000)
 
 def has_booked(df: pd.DataFrame):
     r = df.groupby("srch_id")["booking_bool"].sum()
