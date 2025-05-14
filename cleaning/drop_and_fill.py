@@ -1,80 +1,88 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.impute import KNNImputer
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-dir = os.path.dirname(os.path.realpath(__file__)) + os.path.sep + ".." + os.path.sep
-df = pd.read_csv(dir + "data/training_set_VU_DM.csv")
+SAMPLE_SIZE = 1000
+RANDOM_STATE = 42
+N_ESTIMATORS = 100
 
-# Drop
+# Paths
+BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+INPUT_CSV = os.path.join(BASE_DIR, "data", "training_set_VU_DM.csv")
+OUTPUT_CSV = os.path.join(BASE_DIR, "data", "cleaned_dataset.csv")
 
-columns_to_drop = [
+# Load data
+df = pd.read_csv(INPUT_CSV)
+
+# Drop unnecessary columns
+df = df.drop(columns=[
     'visitor_hist_adr_usd',
     'prop_log_historical_price',
     'srch_query_affinity_score',
     'orig_destination_distance',
     'position',
-    'gross_bookings_usd'
-]
+    'gross_bookings_usd',
+    'prop_location_score2'
+])
 
-df.drop(columns=columns_to_drop)
+# Features to use for imputations
+features = ['prop_location_score1', 'price_usd']
 
-# Fill star rating
-
+# Fill prop_starrating
 df['prop_starrating'] = df['prop_starrating'].replace(0, np.nan)
-known = df[df['prop_starrating'].notnull()]
-missing = df[df['prop_starrating'].isnull()]
+mask = df['prop_starrating'].isna()
 
-features = [
-    'prop_location_score1',
-    'prop_location_score2',
-    'price_usd']
+if mask.any():
+    known = df.loc[~mask, features + ['prop_starrating']].dropna()
+    if len(known) > SAMPLE_SIZE:
+        known = known.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
 
-X_known = known[features]
-y_known = known['prop_starrating'].astype(int)
+    rf_clf = RandomForestClassifier(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=-1)
+    rf_clf.fit(known[features], known['prop_starrating'].astype(int))
 
-X_missing = missing[features]
+    df.loc[mask, 'prop_starrating'] = rf_clf.predict(df.loc[mask, features])
 
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_known, y_known)
-
-predicted = knn.predict(X_missing)
-
-df.loc[df['prop_starrating'].isnull(), 'prop_starrating'] = predicted
 df['prop_starrating'] = df['prop_starrating'].astype(int)
 
-# Fill review score
-
-df['has_reviews'] = df['prop_review_score'].apply(
-    lambda x: 1 if x > 0 else (0 if x == 0 else np.nan)
+# Create has_reviews and clean prop_review_score
+df['has_reviews'] = np.where(
+    df['prop_review_score'] > 0,
+    1,
+    np.where(df['prop_review_score'] == 0, 0, np.nan)
 )
 
 df['prop_review_score'] = df['prop_review_score'].replace(0, np.nan)
 
-knn = KNNImputer(n_neighbors=5)
-sub = df[features + ['prop_review_score']]
-imputed = knn.fit_transform(sub)
+# Fill prop_review_score
+mask = df['prop_review_score'].isna()
 
-df['prop_review_score'] = imputed[:, -1].round().astype(int)
+if mask.any():
+    known = df.loc[~mask, features + ['prop_review_score']].dropna()
+    if len(known) > SAMPLE_SIZE:
+        known = known.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
 
+    rf_reg = RandomForestRegressor(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=-1)
+    rf_reg.fit(known[features], known['prop_review_score'])
 
-df.to_csv(dir + 'data/cleaned_dataset.csv', index=False)
+    df.loc[mask, 'prop_review_score'] = rf_reg.predict(df.loc[mask, features])
 
-# Fill has reviews
+df['prop_review_score'] = df['prop_review_score'].astype(float)
 
-known = df[df['has_reviews'].notnull()]
-missing = df[df['has_reviews'].isnull()]
+# Fill has_reviews
+mask = df['has_reviews'].isna()
 
-X_known = known[features]
-y_known = known['has_reviews'].astype(int)
+if mask.any():
+    known = df.loc[~mask, features + ['has_reviews']].dropna()
+    if len(known) > SAMPLE_SIZE:
+        known = known.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
 
-X_missing = missing[features]
+    rf_clf = RandomForestClassifier(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=-1)
+    rf_clf.fit(known[features], known['has_reviews'].astype(int))
 
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_known, y_known)
+    df.loc[mask, 'has_reviews'] = rf_clf.predict(df.loc[mask, features])
 
-predicted = knn.predict(X_missing)
-
-df.loc[df['has_reviews'].isnull(), 'has_reviews'] = predicted
 df['has_reviews'] = df['has_reviews'].astype(int)
+
+# Save dataset
+df.to_csv(OUTPUT_CSV, index=False)
