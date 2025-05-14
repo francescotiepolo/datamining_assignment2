@@ -51,3 +51,4 @@ Join?
 * `compn_rate` with `null`
 * `compn_inv` with `null`
 * `compn_rate_percent_diff` with `null`
+    - dropped because there existed a difference even when compn_rate = 0 (expedia has same price as competitor)

@@ -25,6 +25,9 @@ df = df.drop(columns=[
     'gross_bookings_usd',
     'prop_location_score2'
 ])
+pct_diff_cols = [col for col in df.columns if col.endswith("_rate_percent_diff")]
+df = df.drop(columns=pct_diff_cols)
+
 
 # Features to use for imputations
 features = ['prop_location_score1', 'price_usd']
