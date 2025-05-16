@@ -23,8 +23,7 @@ df["price_comp"] = (
 ).astype(int)
 
 
-# Any competitor has availability?  
-#    compX_inv == 0 means “competitor X has availability”  
+# Any competitor has availability?   
 inv_cols = [f"comp{i}_inv" for i in range(1,9)]
 df["any_comp_avail"] = df[inv_cols].eq(0).any(axis=1).astype(int)
 
