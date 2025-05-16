@@ -93,7 +93,7 @@ def objective(trial):
         params,
         dtrain,
         valid_sets=[dval],
-        num_boost_round=1000,
+        num_boost_round=2000,
         callbacks=[
             lgb.early_stopping(stopping_rounds=50),
             lgb.log_evaluation(period=0)
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         final_params,
         dtrain_full,
         valid_sets=[dval_full],
-        num_boost_round=1000,
+        num_boost_round=3000,
         callbacks=[
             lgb.early_stopping(stopping_rounds=50),
             lgb.log_evaluation(period=50)
