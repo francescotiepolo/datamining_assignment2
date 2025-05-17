@@ -200,7 +200,6 @@ submission = (
     df_test
     .sort_values(["srch_id", "rank"])
     .loc[:, ["srch_id", "prop_id"]]
-    .rename(columns={"srch_id": "SearchId", "prop_id": "PropertyId"})
 )
 
-submission.to_csv(base_dir + "data/final_submission.csv", index=False)
+submission.to_csv(base_dir + "data/VU-DM-2025-Group-129.csv", index=False)
