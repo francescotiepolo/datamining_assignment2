@@ -25,9 +25,9 @@ columns_histable = ['visitor_hist_starrating', 'visitor_hist_adr_usd', 'srch_len
                   'srch_room_count', 'srch_saturday_night_bool', 'srch_query_affinity_score',
                   'orig_destination_distance', 'random_bool', 'prop_brand_bool', 'prop_location_score1', 
                   'prop_location_score2', 'promotion_flag', 'prop_starrating', 'prop_review_score', 
-                  'prop_log_historical_price', 'price_usd']
+                  'prop_log_historical_price']
 
-fig, axes = plt.subplots(nrows=6, ncols=4, figsize=(20, 20))  
+fig, axes = plt.subplots(nrows=6, ncols=3, figsize=(20, 20))  
 fig.tight_layout(pad=4.0)  
 axes = axes.flatten()
 
@@ -45,8 +45,9 @@ plt.close()
 print(f"\nSaved combined histograms: {save_path}")
 print("\nAll histograms saved successfully!")
 
+columns_full = columns_histable + ["price_usd"]
 stats_df = pd.DataFrame()
-for column in columns_histable:
+for column in columns_full:
     desc = df[column].describe().round(3).to_frame().T 
     desc['variable'] = column  
     stats_df = pd.concat([stats_df, desc], ignore_index=True)
