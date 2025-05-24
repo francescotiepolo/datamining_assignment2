@@ -35,7 +35,7 @@ groups_val_full   = X_val_full.groupby("srch_id").size().to_list()
 # 2. Sample a subset of queries for tuning (20%)
 np.random.seed(133)
 sub_queries = np.random.choice(train_srch_full,
-                               size=int(0.5 * len(train_srch_full)),
+                               size=int(0.2 * len(train_srch_full)),
                                replace=False)
 
 mask_sub = X_train_full["srch_id"].isin(sub_queries)
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         "bagging_fraction": 1.0,
         "bagging_freq": 1
     })
-    study.optimize(objective, n_trials=100, timeout=10000)
+    study.optimize(objective, n_trials=20, timeout=10000)
 
     print(">>> Best NDCG@5 on subset:", study.best_value)
     print(">>> Best params:", study.best_params)
