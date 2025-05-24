@@ -97,7 +97,7 @@ def objective(trial):
     return compute_ndcg(bst, X_val_sub, y_val_sub, X_val_sub["srch_id"], k=5)
 
 study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=100, timeout=10000)
+study.optimize(objective, n_trials=20, timeout=10000)
 
 final_params = {
     **study.best_params,
@@ -122,26 +122,10 @@ y_all = pd.concat([y_train_full, y_val_full], ignore_index=True)
 groups_all = X_all.groupby("srch_id").size().to_list()
 dall = xgb.DMatrix(X_all, label=y_all, group=groups_all)
 
-# Train on the entire labeled data, using the best params
-cv_results = xgb.cv(
-    final_params,
-    dall,
-    nfold=5,
-    stratified=False,
-    num_boost_round=5000,
-    metrics="ndcg",
-    seed=133
-)
-
-mean_key = next(k for k in cv_results.keys() if k.endswith("-mean"))
-best_rounds = len(cv_results[mean_key])
-
-print(f"Best number of rounds from CV: {best_rounds}")
-
 model_all = xgb.train(
     final_params,
     dall,
-    num_boost_round=best_rounds
+    num_boost_round=1000
 )
 
 # 6. Load & preprocess test data
