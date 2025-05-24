@@ -13,7 +13,7 @@ columns_to_vis = ['site_id', 'visitor_location_country_id',
                   'visitor_hist_starrating', 'visitor_hist_adr_usd', 'srch_destination_id', 
                   'srch_length_of_stay', 'srch_booking_window','srch_adults_count', 'srch_children_count',
                   'srch_room_count', 'srch_saturday_night_bool', 'srch_query_affinity_score',
-                  'orig_destination_distance', 'random_bool']
+                  'orig_destination_distance', 'random_bool', 'price_usd']
 
 for column in columns_to_vis:
     print(column)
@@ -25,9 +25,9 @@ columns_histable = ['visitor_hist_starrating', 'visitor_hist_adr_usd', 'srch_len
                   'srch_room_count', 'srch_saturday_night_bool', 'srch_query_affinity_score',
                   'orig_destination_distance', 'random_bool', 'prop_brand_bool', 'prop_location_score1', 
                   'prop_location_score2', 'promotion_flag', 'prop_starrating', 'prop_review_score', 
-                  'prop_log_historical_price']
+                  'prop_log_historical_price', 'price_usd']
 
-fig, axes = plt.subplots(nrows=6, ncols=3, figsize=(20, 20))  
+fig, axes = plt.subplots(nrows=6, ncols=4, figsize=(20, 20))  
 fig.tight_layout(pad=4.0)  
 axes = axes.flatten()
 
