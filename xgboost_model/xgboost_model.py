@@ -99,6 +99,9 @@ def objective(trial):
 study = optuna.create_study(direction="maximize")
 study.optimize(objective, n_trials=20, timeout=10000)
 
+print(">>> Best NDCG@5 on subset:", study.best_value)
+print(">>> Best params:", study.best_params)
+
 final_params = {
     **study.best_params,
     "objective": "rank:ndcg",
@@ -115,6 +118,7 @@ final_model = xgb.train(
 
 # Evaluate final
 final_ndcg = compute_ndcg(final_model, X_val_full, y_val_full, X_val_full["srch_id"], k=5)
+print(f">>> Final model NDCG@5 on full val: {final_ndcg:.4f}")
 
 # Create a single LightGBM dataset
 X_all = pd.concat([X_train_full, X_val_full], ignore_index=True)
@@ -137,7 +141,7 @@ df_test["srch_weekday"] = pd.to_datetime(df_test["date_time"]).dt.weekday
 df_test = df_test.drop(columns=["date_time"])
 
 # 7. Predict scores
-df_test["pred_score"] = model_all.predict(df_test, num_iteration=final_model.best_iteration)
+df_test["pred_score"] = model_all.predict(df_test)
 
 # 8. Rank within each search (assign rank=1 to highest score, 2 to next, etc.)
 df_test["rank"] = (
