@@ -29,6 +29,27 @@ X_val_full   = df[~mask_train_full].reset_index(drop=True)
 y_train_full = y_full[mask_train_full].reset_index(drop=True)
 y_val_full   = y_full[~mask_train_full].reset_index(drop=True)
 
+# 2. Sample a subset of queries for tuning (20%)
+np.random.seed(133)
+sub_queries = np.random.choice(train_srch_full,
+                               size=int(0.5 * len(train_srch_full)),
+                               replace=False)
+
+mask_sub = X_train_full["srch_id"].isin(sub_queries)
+X_train_sub = X_train_full[mask_sub].reset_index(drop=True)
+y_train_sub = y_train_full[mask_sub].reset_index(drop=True)
+groups_train_sub = X_train_sub.groupby("srch_id").size().to_list()
+
+# Split subset into sub-train and sub-val for Optuna
+sub_srch = X_train_sub["srch_id"].unique()
+sub_tr, sub_val = train_test_split(sub_srch, test_size=0.1, random_state=133)
+mask_tr_sub = X_train_sub["srch_id"].isin(sub_tr)
+
+X_tr_sub = X_train_sub[mask_tr_sub].reset_index(drop=True)
+X_val_sub = X_train_sub[~mask_tr_sub].reset_index(drop=True)
+y_tr_sub = y_train_sub[mask_tr_sub].reset_index(drop=True)
+y_val_sub = y_train_sub[~mask_tr_sub].reset_index(drop=True)
+
 groups_train_full = X_train_full.groupby("srch_id").size().to_list()
 groups_val_full   = X_val_full.groupby("srch_id").size().to_list()
 
@@ -36,7 +57,7 @@ def compute_ndcg(model, X, y, srch_ids, k=5):
     tmp = X.copy()
     tmp["srch_id"] = srch_ids
     tmp["y_true"]  = y
-    tmp["y_pred"]  = model.predict(X, num_iteration=model.best_iteration)
+    tmp["y_pred"]  = model.predict(xgb.DMatrix(X))
     scores = []
     for _, grp in tmp.groupby("srch_id"):
         true = grp["y_true"].values.reshape(1, -1)
@@ -52,8 +73,8 @@ def objective(trial):
 
     param = {
         "silent": 1,
-        "objective": "rank:pairwise",
-        "eval_metric": "ndcg@5",
+        "objective": "rank:ndcg",
+        "eval_metric": "ndcg",
         "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
         "lambda": trial.suggest_loguniform("lambda", 1e-8, 1.0),
         "alpha": trial.suggest_loguniform("alpha", 1e-8, 1.0),
@@ -71,36 +92,27 @@ def objective(trial):
         param["skip_drop"] = trial.suggest_loguniform("skip_drop", 1e-8, 1.0)
 
     # Add a callback for pruning.
-    pruning_callback = optuna.integration.XGBoostPruningCallback(trial, "ndcg@5")
+    pruning_callback = optuna.integration.XGBoostPruningCallback(trial, "validation-ndcg")
     bst = xgb.train(param, dtrain, evals=[(dtest, "validation")], callbacks=[pruning_callback])
-    preds = bst.predict(dtest)
-    pred_labels = np.rint(preds)
-    accuracy = ndcg_score(y_val_full, pred_labels)
-    return accuracy
+    return compute_ndcg(bst, X_val_sub, y_val_sub, X_val_sub["srch_id"], k=5)
 
 study = optuna.create_study(direction="maximize")
 study.optimize(objective, n_trials=100, timeout=10000)
 
 final_params = {
     **study.best_params,
-    "objective": "rank:pairwise",
-    "eval_metric": "ndcg@5",
+    "objective": "rank:ndcg",
+    "eval_metric": "ndcg",
 }
-
 
 dtrain = xgb.DMatrix(X_train_full, label=y_train_full)
 dtest = xgb.DMatrix(X_val_full, label=y_val_full)
-
 
 final_model = xgb.train(
     final_params,
     dtrain,
     valid_sets=[dtest],
     num_boost_round=3000,
-    callbacks=[
-        xgb.early_stopping(stopping_rounds=50),
-        xgb.log_evaluation(period=50)
-    ]
 )
 
 # Evaluate final
