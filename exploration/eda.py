@@ -25,9 +25,8 @@ columns_histable = ['visitor_hist_starrating', 'visitor_hist_adr_usd', 'srch_len
                   'srch_room_count', 'srch_saturday_night_bool', 'srch_query_affinity_score',
                   'orig_destination_distance', 'random_bool', 'prop_brand_bool', 'prop_location_score1', 
                   'prop_location_score2', 'promotion_flag', 'prop_starrating', 'prop_review_score', 
-                  'prop_log_historical_price', ]
+                  'prop_log_historical_price']
 
-"""
 fig, axes = plt.subplots(nrows=6, ncols=3, figsize=(20, 20))  
 fig.tight_layout(pad=4.0)  
 axes = axes.flatten()
@@ -59,7 +58,7 @@ stats_df.to_csv(stats_path, index=False)
 print(f"Saved statistics table to: {stats_path}")
 
 # correlation table with click_bool and booking_bool
-"""
+
 targets = ['click_bool', 'booking_bool']
 # Selects only numeric columns 
 numeric_cols = df.select_dtypes(include=['number']).columns
