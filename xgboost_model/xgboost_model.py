@@ -112,7 +112,6 @@ final_model = xgb.train(
     final_params,
     dtrain,
     valid_sets=[dtest],
-    num_boost_round=3000,
 )
 
 # Evaluate final
