@@ -111,7 +111,6 @@ dtest = xgb.DMatrix(X_val_full, label=y_val_full)
 final_model = xgb.train(
     final_params,
     dtrain,
-    valid_sets=[dtest],
 )
 
 # Evaluate final
