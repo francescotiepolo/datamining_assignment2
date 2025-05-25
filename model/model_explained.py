@@ -9,6 +9,7 @@ import dalex as dx
 # 1. Load your data
 dir = os.path.dirname(os.path.realpath(__file__)) + os.path.sep + ".." + os.path.sep
 df = pd.read_csv(dir + "data/updated_dataset.csv")
+df = df.drop(columns=["visitor_hist_starrating", "visitor_hist_adr_usd"])
 
 # 2. Create your relevance label
 #    5 if booked, 1 if clicked only, 0 otherwise
@@ -51,22 +52,35 @@ params = {
 model = lgb.train(
     params,
     lgb_train,
-    valid_sets=[lgb_train, lgb_val],
-    valid_names=["train", "valid"],
+    valid_sets=[lgb_val],
+    valid_names=["valid"],
     num_boost_round=1000,
     callbacks=[lgb.early_stopping(stopping_rounds=50)]
 )
 
+def compute_ndcg(model, X, y, srch_ids, k=5):
+    tmp = X.copy()
+    tmp["srch_id"] = srch_ids
+    tmp["y_true"]  = y
+    tmp["y_pred"]  = model.predict(X, num_iteration=model.best_iteration)
+    scores = []
+    for _, grp in tmp.groupby("srch_id"):
+        true = grp["y_true"].values.reshape(1, -1)
+        pred = grp["y_pred"].values.reshape(1, -1)
+        if true.shape[1] < 2:
+            continue
+        scores.append(ndcg_score(true, pred, k=k))
+    return np.mean(scores)
 
-exp = dx.Explainer(model, X_train, y_train)
+final_ndcg = compute_ndcg(model, X_val, y_val, X_val["srch_id"], k=5)
+print(final_ndcg)
+# exp = dx.Explainer(model, X_train, y_train)
 
-exp.model_fairness(X_train["srch_children_count"].apply(lambda x: "0" if x == 0 else "1"), "0").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["srch_adults_count"].apply(lambda x: "1" if x == 1 else ("2" if x == 2 else "3")), "1").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["srch_adults_count"].apply(lambda x: "1" if x == 1 else ("2" if x == 2 else "3")), "2").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["srch_booking_window"].apply(lambda x: "short" if x <= 30 else "long"), "short").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["srch_length_of_stay"].apply(lambda x: "short" if x <= 6 else "long"), "long").fairness_check(epsilon=0.8)
-quantile = X_train["price_usd"].quantile(0.75)
-exp.model_fairness(X_train["price_usd"].apply(lambda x: "cheap" if x <= quantile else "expensive"), "expensive").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["srch_saturday_night_bool"].apply(lambda x: "weekday" if x == 1 else "weekend"), "weekday").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["visitor_hist_starrating"].apply(lambda x: "new" if pd.isna(x) else "old"), "new").fairness_check(epsilon=0.8)
-exp.model_fairness(X_train["visitor_hist_adr_usd"].apply(lambda x: "new" if pd.isna(x) else "old"), "new").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_children_count"].apply(lambda x: "0" if x == 0 else "1"), "0").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_adults_count"].apply(lambda x: "1" if x == 1 else ("2" if x == 2 else "3")), "1").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_adults_count"].apply(lambda x: "1" if x == 1 else ("2" if x == 2 else "3")), "2").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_booking_window"].apply(lambda x: "short" if x <= 30 else "long"), "short").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_length_of_stay"].apply(lambda x: "short" if x <= 6 else "long"), "long").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["srch_saturday_night_bool"].apply(lambda x: "weekday" if x == 1 else "weekend"), "weekday").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["visitor_hist_starrating"].apply(lambda x: "new" if pd.isna(x) else "old"), "new").fairness_check(epsilon=0.8)
+# exp.model_fairness(X_train["visitor_hist_adr_usd"].apply(lambda x: "new" if pd.isna(x) else "old"), "new").fairness_check(epsilon=0.8)
